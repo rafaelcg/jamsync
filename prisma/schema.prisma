@@ -1,0 +1,73 @@
+// Prisma schema for JamSync
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  email         String   @unique
+  password      String?
+  displayName   String
+  avatarUrl     String?
+  bio           String?
+  followersCount Int     @default(0)
+  followingCount Int     @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tracks        Track[]
+  likes         Like[]
+  followedBy    Follow[] @relation("following")
+  following     Follow[] @relation("follower")
+}
+
+model Track {
+  id              String   @id @default(cuid())
+  userId          String
+  title           String
+  description     String?
+  audioUrl        String
+  durationSeconds Int      @default(0)
+  likesCount      Int      @default(0)
+  commentsCount   Int      @default(0)
+  remixesCount    Int      @default(0)
+  isMain          Boolean  @default(false)
+  originalTrackId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  originalTrack Track?   @relation("Remixes", fields: [originalTrackId], references: [id])
+  remixes       Track[]  @relation("Remixes")
+  likes         Like[]
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  trackId   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, trackId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}

@@ -1,0 +1,19 @@
+export * from './useAuth';
+export * from './useInfiniteScroll';
+export * from './useLike';
+export * from './useVideoAutoPlay';
+export * from './useSwipeNavigation';
+export * from './useVolume';
+export * from './useDebouncedSearch';
+
+// Modal state management hook
+import { useState, useCallback } from 'react';
+
+export function useModal() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const openModal = useCallback(() => setIsOpen(true), []);
+  const closeModal = useCallback(() => setIsOpen(false), []);
+
+  return { isOpen, openModal, closeModal };
+}

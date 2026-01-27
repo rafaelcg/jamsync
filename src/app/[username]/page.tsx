@@ -1,72 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { TopBar, Navigation } from "@/components/layout";
 import type { Track, User, TabItem } from "@/types";
-
-// Mock user data (in production, this would come from the API)
-const getMockUser = (usernameParam: string): User => {
-  const username = usernameParam.replace("@", "");
-  return {
-    id: "1",
-    username: username,
-    displayName: username.charAt(0).toUpperCase() + username.slice(1),
-    avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
-    bio: "Music creator 🎵 | Building the future of sound",
-    followersCount: Math.floor(Math.random() * 50000),
-    followingCount: Math.floor(Math.random() * 1000),
-    tracksCount: Math.floor(Math.random() * 50),
-  };
-};
-
-const getMockTracks = (usernameParam: string): Track[] => {
-  const user = getMockUser(usernameParam);
-  return [
-    {
-      id: "1",
-      userId: "1",
-      user: user,
-      title: "Summer Vibes",
-      description: "Just vibing on this summer track ☀️",
-      audioUrl: "/demo.mp3",
-      videoUrl: "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4",
-      durationSeconds: 185,
-      likesCount: 1247,
-      commentsCount: 89,
-      remixesCount: 12,
-      createdAt: "2025-01-15T10:30:00Z",
-      tags: ["summer", "chill", "beats"],
-    },
-    {
-      id: "2",
-      userId: "1",
-      user: user,
-      title: "Midnight Dreams",
-      description: "Late night studio session 🎹",
-      audioUrl: "/demo.mp3",
-      durationSeconds: 210,
-      likesCount: 2340,
-      commentsCount: 156,
-      remixesCount: 8,
-      createdAt: "2025-01-14T22:15:00Z",
-      isMain: true,
-    },
-    {
-      id: "3",
-      userId: "1",
-      user: user,
-      title: "Urban Flow",
-      description: "Street beats for the soul 🎤",
-      audioUrl: "/demo.mp3",
-      durationSeconds: 168,
-      likesCount: 5600,
-      commentsCount: 234,
-      remixesCount: 45,
-      createdAt: "2025-01-13T18:45:00Z",
-    },
-  ];
-};
 
 export default function ProfilePage() {
   const params = useParams();
@@ -76,9 +13,86 @@ export default function ProfilePage() {
   const username = decodeURIComponent(rawUsername);
   const [activeTab, setActiveTab] = useState<TabItem>("home");
   const [isFollowing, setIsFollowing] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const user = getMockUser(username);
-  const tracks = getMockTracks(username);
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/users/${encodeURIComponent(username)}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+        
+        const data = await response.json();
+        setUser(data.user);
+        setTracks(data.tracks || []);
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+        setError('Failed to load profile');
+        // Fallback to mock data on error
+        setUser({
+          id: "1",
+          username: username.replace("@", ""),
+          displayName: username.charAt(0).toUpperCase() + username.slice(1),
+          avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
+          bio: "Music creator 🎵 | Building the future of sound",
+          followersCount: Math.floor(Math.random() * 50000),
+          followingCount: Math.floor(Math.random() * 1000),
+          tracksCount: 0,
+        });
+        setTracks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (username) {
+      fetchProfileData();
+    }
+  }, [username]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error && !user) {
+    return (
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500">{error}</p>
+          <button 
+            onClick={() => router.push('/')}
+            className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-xl"
+          >
+            Go Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback user if still null
+  const displayUser = user || {
+    id: "1",
+    username: username.replace("@", ""),
+    displayName: username.charAt(0).toUpperCase() + username.slice(1),
+    avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
+    bio: "Music creator 🎵 | Building the future of sound",
+    followersCount: 0,
+    followingCount: 0,
+    tracksCount: 0,
+  };
 
   return (
     <div className="min-h-screen bg-neutral-950">
@@ -114,16 +128,16 @@ export default function ProfilePage() {
           <div className="flex items-end gap-4">
             <div className="w-24 h-24 rounded-full border-4 border-white dark:border-neutral-950 bg-neutral-200 overflow-hidden">
               <img
-                src={user.avatarUrl}
-                alt={user.username}
+                src={displayUser.avatarUrl}
+                alt={displayUser.username}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="flex-1 pb-2">
               <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-                {user.displayName}
+                {displayUser.displayName}
               </h1>
-              <p className="text-neutral-500">@{user.username}</p>
+              <p className="text-neutral-500">@{displayUser.username}</p>
             </div>
           </div>
 
@@ -131,19 +145,19 @@ export default function ProfilePage() {
           <div className="flex gap-6 mt-4">
             <div className="text-center cursor-pointer">
               <p className="text-lg font-bold text-neutral-900 dark:text-white">
-                {user.tracksCount}
+                {displayUser.tracksCount}
               </p>
               <p className="text-xs text-neutral-500">Tracks</p>
             </div>
             <div className="text-center cursor-pointer">
               <p className="text-lg font-bold text-neutral-900 dark:text-white">
-                {user.followersCount.toLocaleString()}
+                {displayUser.followersCount.toLocaleString()}
               </p>
               <p className="text-xs text-neutral-500">Followers</p>
             </div>
             <div className="text-center cursor-pointer">
               <p className="text-lg font-bold text-neutral-900 dark:text-white">
-                {user.followingCount}
+                {displayUser.followingCount}
               </p>
               <p className="text-xs text-neutral-500">Following</p>
             </div>
@@ -179,8 +193,8 @@ export default function ProfilePage() {
           </div>
 
           {/* Bio */}
-          {user.bio && (
-            <p className="mt-4 text-neutral-700 dark:text-neutral-300">{user.bio}</p>
+          {displayUser.bio && (
+            <p className="mt-4 text-neutral-700 dark:text-neutral-300">{displayUser.bio}</p>
           )}
         </div>
 

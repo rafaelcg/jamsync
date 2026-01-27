@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 
+// Helper to normalize username (remove @ prefix)
+const normalizeUsername = (username: string) => username.replace(/^@/, '');
+
 // Mock tracks data
 const getMockTracks = (userId: string, username: string) => {
+  const displayName = username.charAt(0).toUpperCase() + username.slice(1).replace(/[0-9]/g, '');
+  
   return [
     {
       id: `${userId}-track-1`,
@@ -9,8 +14,8 @@ const getMockTracks = (userId: string, username: string) => {
       user: {
         id: userId,
         username: username,
-        displayName: username.charAt(0).toUpperCase() + username.slice(1).replace(/[0-9]/g, ''),
-        avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+        displayName: displayName,
+        avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
         followersCount: Math.floor(Math.random() * 10000),
         followingCount: Math.floor(Math.random() * 1000),
         tracksCount: Math.floor(Math.random() * 50),
@@ -32,8 +37,8 @@ const getMockTracks = (userId: string, username: string) => {
       user: {
         id: userId,
         username: username,
-        displayName: username.charAt(0).toUpperCase() + username.slice(1).replace(/[0-9]/g, ''),
-        avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+        displayName: displayName,
+        avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
         followersCount: Math.floor(Math.random() * 10000),
         followingCount: Math.floor(Math.random() * 1000),
         tracksCount: Math.floor(Math.random() * 50),
@@ -54,8 +59,8 @@ const getMockTracks = (userId: string, username: string) => {
       user: {
         id: userId,
         username: username,
-        displayName: username.charAt(0).toUpperCase() + username.slice(1).replace(/[0-9]/g, ''),
-        avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+        displayName: displayName,
+        avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
         followersCount: Math.floor(Math.random() * 10000),
         followingCount: Math.floor(Math.random() * 1000),
         tracksCount: Math.floor(Math.random() * 50),
@@ -78,10 +83,12 @@ export async function GET(
   { params }: { params: { username: string } }
 ) {
   try {
-    // In production, this would fetch from the actual backend
-    // For now, return mock data based on username
-    const username = params.username;
-    const userId = `user-${username}`;
+    // Normalize username (remove @ prefix if present)
+    const normalizedUsername = normalizeUsername(params.username);
+    
+    // Use normalized username for userId to avoid encoding issues
+    const userId = `user-${normalizedUsername}`;
+    const username = normalizedUsername;
     
     // Simulate user data
     const userData = {
@@ -89,7 +96,7 @@ export async function GET(
       username: username,
       displayName: username.charAt(0).toUpperCase() + username.slice(1).replace(/[0-9]/g, ''),
       email: `${username}@example.com`,
-      avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+      avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
       bio: 'Music creator on JamSync 🎵',
       followersCount: Math.floor(Math.random() * 10000),
       followingCount: Math.floor(Math.random() * 1000),
@@ -121,10 +128,11 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
+    const normalizedUsername = normalizeUsername(params.username);
     // TODO: Replace with actual API call
     return NextResponse.json({
       id: 'user-id',
-      username: params.username,
+      username: normalizedUsername,
       ...body,
     });
   } catch {

@@ -132,12 +132,14 @@ const mockTrendingTracks: Track[] = [
 export default function TrendingPage() {
   const [activeTab, setActiveTab] = useState<TabItem>("trending");
   const [timeFilter, setTimeFilter] = useState<"all" | "week" | "day">("all");
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize with mock data so page shows content immediately
+  const [tracks, setTracks] = useState<Track[]>(mockTrendingTracks);
+  const [isLoading, setIsLoading] = useState(false); // Start with false since we have mock data
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchTrendingTracks();
+    // Silent fetch in background - page already has mock data
+    fetchTrendingTracks().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeFilter]);
 

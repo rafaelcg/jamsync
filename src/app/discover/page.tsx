@@ -14,6 +14,11 @@ const formatCountWithLabel = (count: number): string => {
   return count.toString();
 };
 
+
+const mockRemixes = [
+  { id: "1", title: "Summer Vibe", user: { username: "remixer1", displayName: "Remixer One" }, bpm: 128 },
+  { id: "2", title: "Chill Mix", user: { username: "chill_guy", displayName: "Chill Guy" }, bpm: 95 },
+];
 export default function DiscoverPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");

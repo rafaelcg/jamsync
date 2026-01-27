@@ -53,8 +53,11 @@ export default function ProfilePage() {
 
   const handleEditProfile = () => {
     setIsLoading(true);
-    // Navigate to edit profile page
-    router.push('/profile/edit');
+    // Get current user's username and navigate to edit page
+    const currentUsername = typeof window !== 'undefined' 
+      ? localStorage.getItem('currentUsername') || 'musicmaker'
+      : 'musicmaker';
+    router.push(`/${currentUsername}/edit`);
   };
 
   return (

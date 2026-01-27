@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { TopBar } from "@/components/layout";
 import { RemixModal } from "@/components/modal";
 import { MainSection } from "@/components/feed";
-import { AudioPlayer } from "@/components/audio";
+import { AudioPlayer } from "../../../components/audio/AudioPlayer";
 import { Avatar, Button, Badge } from "@/components/ui";
 import type { Track, Comment } from "@/types";
 
@@ -23,8 +23,8 @@ const mockTrack: Track = {
   },
   title: "Summer Vibes",
   description: "Just vibing on this summer track ☀️ Nothing but good vibes and chill beats. Created this during a sunset session in Malibu 🎵",
-  audioUrl: "/demo.mp3",
-  videoUrl: "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4",
+  audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+  // No videoUrl - will use AudioPlayer
   durationSeconds: 185,
   likesCount: 1247,
   commentsCount: 89,
@@ -224,13 +224,17 @@ export default function TrackDetailPage() {
               controls
               poster="/placeholder.jpg"
             />
+          ) : mockTrack.audioUrl ? (
+            <div className="w-full h-full">
+              <AudioPlayer track={mockTrack} />
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-600 to-secondary-600">
               <div className="text-center text-white">
                 <svg className="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
-                <p className="text-lg font-medium">Play Audio</p>
+                <p className="text-lg font-medium">No audio available</p>
               </div>
             </div>
           )}
@@ -342,22 +346,6 @@ export default function TrackDetailPage() {
                 />
               </svg>
             </Button>
-          </div>
-
-          {/* Waveform Placeholder */}
-          <div className="mt-4 p-4 bg-neutral-100 dark:bg-neutral-900 rounded-xl">
-            <p className="text-sm text-neutral-500 mb-2">Waveform Preview</p>
-            <div className="flex items-center gap-0.5 h-12">
-              {Array.from({ length: 50 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-full bg-primary-500"
-                  style={{
-                    height: `${20 + Math.random() * 80}%`,
-                  }}
-                />
-              ))}
-            </div>
           </div>
         </div>
 

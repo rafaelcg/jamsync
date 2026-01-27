@@ -82,7 +82,7 @@ const mockComments: Comment[] = [
       tracksCount: 12,
     },
     trackId: "1",
-    content: "Remix coming soon! 🎹",
+    content: "This beat goes hard! Need to check out more from you 🔥",
     likesCount: 42,
     createdAt: new Date().toISOString(),
   },

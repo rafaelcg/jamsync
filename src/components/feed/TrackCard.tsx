@@ -117,7 +117,7 @@ function DefaultTrackCard({
       {/* Info */}
       <div className="p-3">
         <Link 
-          href={`/@${track.user?.username}`}
+          href={`/${encodeURIComponent(track.user?.username || '')}`}
           onClick={(e) => e.stopPropagation()}
           className="flex items-center gap-2 mb-2"
         >
@@ -259,7 +259,7 @@ function HorizontalTrackCard({
         </h3>
         
         <Link 
-          href={`/@${track.user?.username}`}
+          href={`/${encodeURIComponent(track.user?.username || '')}`}
           onClick={(e) => e.stopPropagation()}
           className="flex items-center gap-2 mt-1 text-sm text-neutral-600 dark:text-neutral-400 hover:text-indigo-600"
         >

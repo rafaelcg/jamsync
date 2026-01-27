@@ -132,12 +132,12 @@ export const apiClient = new ApiClient();
 export const api = {
   // Users
   users: {
-    getProfile: (username: string) => apiClient.get(`/users/${username}`),
+    getProfile: (username: string) => apiClient.get(`/users/${encodeURIComponent(username)}`),
     updateProfile: (data: object) => apiClient.put('/users/profile', data),
-    getFollowers: (username: string) => apiClient.get(`/users/${username}/followers`),
-    getFollowing: (username: string) => apiClient.get(`/users/${username}/following`),
-    follow: (username: string) => apiClient.post(`/users/${username}/follow`),
-    unfollow: (username: string) => apiClient.delete(`/users/${username}/follow`),
+    getFollowers: (username: string) => apiClient.get(`/users/${encodeURIComponent(username)}/followers`),
+    getFollowing: (username: string) => apiClient.get(`/users/${encodeURIComponent(username)}/following`),
+    follow: (username: string) => apiClient.post(`/users/${encodeURIComponent(username)}/follow`),
+    unfollow: (username: string) => apiClient.delete(`/users/${encodeURIComponent(username)}/follow`),
   },
 
   // Feed

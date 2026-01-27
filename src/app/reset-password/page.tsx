@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -17,7 +17,7 @@ function ResetPasswordContent() {
   const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
   const [success, setSuccess] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     const tokenParam = searchParams.get("token");
     if (tokenParam) {
       setToken(tokenParam);
@@ -25,7 +25,7 @@ function ResetPasswordContent() {
     } else {
       setIsValidToken(false);
     }
-  });
+  }, [searchParams]);
 
   const validateForm = () => {
     let isValid = true;

@@ -77,7 +77,28 @@ interface FeaturedRemixesProps {
 }
 
 export function FeaturedRemixes({ remixes, onRemixClick }: FeaturedRemixesProps) {
-  if (remixes.length === 0) return null;
+  if (remixes.length === 0) {
+    return (
+      <section className="py-6">
+        <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">
+          🔥 Hot Remixes
+        </h2>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-1">
+            No featured remixes yet
+          </h3>
+          <p className="text-sm text-neutral-500 max-w-xs">
+            Check back later for curated remixes from top creators
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-6">
@@ -164,6 +185,32 @@ interface TrendingTracksProps {
 }
 
 export function TrendingTracks({ tracks, onTrackClick }: TrendingTracksProps) {
+  if (tracks.length === 0) {
+    return (
+      <section className="py-6">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xl">📈</span>
+          <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+            Trending Now
+          </h2>
+        </div>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-1">
+            No trending tracks
+          </h3>
+          <p className="text-sm text-neutral-500 max-w-xs">
+            Be the first to upload and start trending!
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-6">
       <div className="flex items-center gap-2 mb-4">

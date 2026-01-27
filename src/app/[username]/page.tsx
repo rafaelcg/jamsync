@@ -71,7 +71,9 @@ const getMockTracks = (usernameParam: string): Track[] => {
 export default function ProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const username = params.username as string;
+  // Decode the username to handle URL-encoded characters like %40 for @
+  const rawUsername = params.username as string;
+  const username = decodeURIComponent(rawUsername);
   const [activeTab, setActiveTab] = useState<TabItem>("home");
   const [isFollowing, setIsFollowing] = useState(false);
 

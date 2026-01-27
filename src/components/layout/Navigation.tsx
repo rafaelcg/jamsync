@@ -97,6 +97,7 @@ export function Navigation({
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
+            aria-label={tab.label}
             className={`
               flex flex-col items-center justify-center gap-1
               min-w-[64px] h-12 rounded-xl

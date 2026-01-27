@@ -150,23 +150,24 @@ export default function TrendingPage() {
         offset: 0,
         timeRange: timeFilter
       });
-      if (response.data && typeof response.data === 'object' && 'tracks' in response.data) {
+      
+      // Use mock data fallback if API fails or returns no data
+      if (response.error || !response.data) {
+        setTracks(mockTrendingTracks);
+      } else if (typeof response.data === 'object' && 'tracks' in response.data) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const fetchedTracks = (response.data as any).tracks as Track[];
         if (fetchedTracks.length > 0) {
           setTracks(fetchedTracks);
         } else {
-          // Use mock data as fallback
           setTracks(mockTrendingTracks);
         }
       } else if (Array.isArray(response.data) && response.data.length > 0) {
         setTracks(response.data);
       } else {
-        // Use mock data as fallback
         setTracks(mockTrendingTracks);
       }
     } catch (err) {
-      // Use mock data as fallback on error
       setTracks(mockTrendingTracks);
       console.error(err);
     } finally {

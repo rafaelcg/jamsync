@@ -180,6 +180,26 @@ export default function HomePage() {
         return <DiscoverPage />;
       case "profile":
         return <ProfilePage />;
+      case "upload":
+        // Open upload modal - show empty state while modal is open
+        setShowUploadModal(true);
+        return (
+          <div className="flex items-center justify-center min-h-screen">
+            <p className="text-neutral-500">Opening upload...</p>
+          </div>
+        );
+      case "notifications":
+        return (
+          <div className="pt-14 pb-20 px-4">
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">Inbox</h2>
+            <div className="flex flex-col items-center justify-center py-20">
+              <svg className="w-16 h-16 text-neutral-300 dark:text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <p className="text-neutral-500">No notifications yet</p>
+            </div>
+          </div>
+        );
       default:
         return (
           <div className="flex items-center justify-center min-h-screen">
@@ -220,7 +240,10 @@ export default function HomePage() {
 
       <UploadModal
         isOpen={showUploadModal}
-        onClose={() => setShowUploadModal(false)}
+        onClose={() => {
+          setShowUploadModal(false);
+          setActiveTab("home");
+        }}
         onUpload={handleUpload}
       />
 

@@ -132,9 +132,17 @@ export function UserProfile({
         <div className="flex items-start gap-4">
           <Avatar src={user.avatarUrl} size="xl" status={isFollowing ? "online" : undefined} />
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-              {user.displayName}
-            </h1>
+            <div className="flex items-center gap-1">
+              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+                {user.displayName}
+              </h1>
+              {user.isVerified && (
+                <svg className="w-5 h-5 text-primary-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path d="M9 12l2 2 4-4" fill="none" stroke="white" strokeWidth="2" />
+                </svg>
+              )}
+            </div>
             <p className="text-neutral-500">@{user.username}</p>
             {user.bio && (
               <p className="mt-2 text-neutral-700 dark:text-neutral-300">{user.bio}</p>

@@ -73,7 +73,7 @@ const mockTracks: Track[] = [
     },
     title: "Rainy Day",
     description: "Perfect for studying",
-    audioUrl: "/demo.mp3",
+    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
     // No videoUrl - this will trigger the AudioPlayer
     durationSeconds: 180,
     likesCount: 456000,

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { TopBar } from "@/components/layout";
 import { RemixModal } from "@/components/modal";
 import { MainSection } from "@/components/feed";
+import { AudioPlayer } from "@/components/audio";
 import { Avatar, Button, Badge } from "@/components/ui";
 import type { Track, Comment } from "@/types";
 

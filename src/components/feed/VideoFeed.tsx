@@ -111,7 +111,7 @@ export function VideoFeed({
 
   if (tracks.length === 0 && !isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-900 text-white p-8">
+      <div className="flex flex-col items-center justify-center h-full bg-neutral-900 text-white p-8">
         <svg
           className="w-16 h-16 text-neutral-500 mb-4"
           fill="none"

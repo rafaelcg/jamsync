@@ -159,8 +159,12 @@ export default function HomePage() {
     console.log("Uploading track:", trackData);
   };
 
-  const handleRemixSubmit = (trackData: Partial<Track>) => {
-    console.log("Creating remix:", trackData);
+  const handleTabChange = (tab: TabItem) => {
+    if (tab === "upload") {
+      setShowUploadModal(true);
+    } else {
+      setActiveTab(tab);
+    }
   };
 
   const renderContent = () => {
@@ -180,14 +184,6 @@ export default function HomePage() {
         return <DiscoverPage />;
       case "profile":
         return <ProfilePage />;
-      case "upload":
-        // Open upload modal - show empty state while modal is open
-        setShowUploadModal(true);
-        return (
-          <div className="flex items-center justify-center min-h-screen">
-            <p className="text-neutral-500">Opening upload...</p>
-          </div>
-        );
       case "notifications":
         return (
           <div className="pt-14 pb-20 px-4">
@@ -201,11 +197,7 @@ export default function HomePage() {
           </div>
         );
       default:
-        return (
-          <div className="flex items-center justify-center min-h-screen">
-            <p className="text-neutral-500">Coming soon...</p>
-          </div>
-        );
+        return null;
     }
   };
 
@@ -227,14 +219,14 @@ export default function HomePage() {
           )}
           {activeTab === "profile" && <div className="h-14" />}
           {renderContent()}
-          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <Navigation activeTab={activeTab} onTabChange={handleTabChange} />
         </>
       )}
 
       {activeTab === "home" && (
         <>
           {renderContent()}
-          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <Navigation activeTab={activeTab} onTabChange={handleTabChange} />
         </>
       )}
 
@@ -384,7 +376,7 @@ function ProfilePage() {
   );
 }
 
-function UserProfilePage({ user }: { user: User; tracks: Track[] }) {
+function UserProfilePage({ user, tracks }: { user: User; tracks: Track[] }) {
   const [isFollowing, setIsFollowing] = useState(false);
 
   return (
@@ -419,6 +411,32 @@ function UserProfilePage({ user }: { user: User; tracks: Track[] }) {
         {["Tracks", "Remixes", "Liked"].map((tab, i) => (
           <button key={tab} className={`flex-1 py-3 text-sm font-medium ${i === 0 ? "text-primary-600 border-b-2 border-primary-600" : "text-neutral-500"}`}>{tab}</button>
         ))}
+      </div>
+
+      {/* Tracks Grid */}
+      <div className="grid grid-cols-2 gap-3 p-4">
+        {tracks.length > 0 ? (
+          tracks.map((track) => (
+            <div
+              key={track.id}
+              className="aspect-square bg-neutral-200 dark:bg-neutral-800 rounded-xl overflow-hidden relative cursor-pointer group"
+            >
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                <p className="text-white font-medium text-sm truncate">{track.title}</p>
+                <p className="text-white/70 text-xs">{track.likesCount.toLocaleString()} likes</p>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="col-span-2 py-20 text-center text-neutral-500">
+            No tracks found
+          </div>
+        )}
       </div>
     </div>
   );

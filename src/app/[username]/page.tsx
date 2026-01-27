@@ -35,17 +35,59 @@ export default function ProfilePage() {
         console.error('Error fetching profile:', err);
         setError('Failed to load profile');
         // Fallback to mock data on error
+        const mockDisplayName = username.charAt(0).toUpperCase() + username.slice(1).replace(/[0-9]/g, '');
         setUser({
           id: "1",
           username: username.replace("@", ""),
-          displayName: username.charAt(0).toUpperCase() + username.slice(1),
+          displayName: mockDisplayName,
           avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
           bio: "Music creator 🎵 | Building the future of sound",
           followersCount: Math.floor(Math.random() * 50000),
           followingCount: Math.floor(Math.random() * 1000),
-          tracksCount: 0,
+          tracksCount: 3,
         });
-        setTracks([]);
+        setTracks([
+          {
+            id: "1",
+            userId: "1",
+            user: {
+              id: "1",
+              username: username.replace("@", ""),
+              displayName: mockDisplayName,
+              avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
+              followersCount: 100,
+              followingCount: 50,
+              tracksCount: 3,
+            },
+            title: "Demo Track 1",
+            audioUrl: "/demo.mp3",
+            durationSeconds: 180,
+            likesCount: 1200,
+            commentsCount: 45,
+            remixesCount: 12,
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: "2",
+            userId: "1",
+            user: {
+              id: "1",
+              username: username.replace("@", ""),
+              displayName: mockDisplayName,
+              avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
+              followersCount: 100,
+              followingCount: 50,
+              tracksCount: 3,
+            },
+            title: "Demo Track 2",
+            audioUrl: "/demo.mp3",
+            durationSeconds: 210,
+            likesCount: 850,
+            commentsCount: 23,
+            remixesCount: 5,
+            createdAt: new Date().toISOString(),
+          }
+        ]);
       } finally {
         setLoading(false);
       }

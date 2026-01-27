@@ -116,6 +116,7 @@ export default function DiscoverPage() {
               {filters.map((filter) => (
                 <button
                   key={filter.id}
+                  aria-label={`Filter by ${filter.label}`}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                     filter.active
                       ? "bg-primary-500 text-white"
@@ -135,6 +136,7 @@ export default function DiscoverPage() {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
+              aria-label={`Select ${category} category`}
               className={`flex-shrink-0 px-4 py-2 rounded-full font-medium transition-colors ${
                 selectedCategory === category
                   ? "bg-primary-500 text-white shadow-md"

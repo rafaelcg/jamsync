@@ -200,6 +200,7 @@ export default function TrendingPage() {
             <button
               key={filter}
               onClick={() => setTimeFilter(filter)}
+              aria-label={`Filter trending by ${filter === "all" ? "all time" : filter === "week" ? "this week" : "today"}`}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 timeFilter === filter
                   ? "bg-primary-500 text-white"

@@ -1,38 +1,50 @@
 import { NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+// Genre tags for discover
+const GENRES = ['Hip Hop', 'Electronic', 'Rock', 'Pop', 'R&B', 'Jazz', 'Classical', 'LoFi', 'Afrobeats', 'Indie'];
+
+// Generate mock discover tracks
+const generateDiscoverTracks = (count: number, genre?: string | null) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `discover-${Date.now()}-${i}`,
+    userId: `user-${i}`,
+    user: {
+      id: `user-${i}`,
+      username: `discover_creator_${i}`,
+      displayName: `New Artist ${i + 1}`,
+      avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=discover${i}`,
+      followersCount: Math.floor(Math.random() * 10000),
+      followingCount: Math.floor(Math.random() * 500),
+      tracksCount: Math.floor(Math.random() * 20),
+    },
+    title: `Fresh Track ${i + 1} ✨`,
+    description: genre ? `New ${genre.toLowerCase()} release` : 'Brand new music discovered',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    videoUrl: Math.random() > 0.5 ? 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4' : undefined,
+    durationSeconds: 180 + Math.floor(Math.random() * 120),
+    likesCount: Math.floor(Math.random() * 50000),
+    commentsCount: Math.floor(Math.random() * 2000),
+    remixesCount: Math.floor(Math.random() * 50),
+    createdAt: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+    tags: genre ? [genre.toLowerCase(), 'new', 'discover'] : ['new', 'discover', 'fresh'],
+  }));
+};
 
 // GET /api/feed/discover - Discover new tracks
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const limit = searchParams.get('limit') || '20';
-  const offset = searchParams.get('offset') || '0';
+  const limit = parseInt(searchParams.get('limit') || '20');
+  const offset = parseInt(searchParams.get('offset') || '0');
   const genre = searchParams.get('genre');
 
-  try {
-    const queryParams = new URLSearchParams({
-      limit,
-      offset,
-      ...(genre && { genre }),
-    });
-    
-    const response = await fetch(`${API_BASE_URL}/feed/discover?${queryParams}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+  // Return mock data directly - no external backend needed
+  const tracks = generateDiscoverTracks(limit, genre);
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
-    }
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Discover API error:', error);
-    return NextResponse.json(
-      { tracks: [], error: 'Failed to fetch discover tracks' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({
+    tracks,
+    nextCursor: offset + limit,
+    hasMore: offset + limit < 200,
+    genre: genre || 'All',
+    availableGenres: GENRES,
+  });
 }

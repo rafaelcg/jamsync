@@ -1,25 +1,37 @@
 import type { ApiResponse } from '@/types';
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/api/v1';
+// Use internal API routes in production, no external backend needed
+// All data is served from Next.js API routes with mock data
+const USE_INTERNAL_API = true;
 
 class ApiClient {
-  private baseUrl: string;
-  private accessToken: string | null = null;
+  private useInternal: boolean;
 
-  constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
+  constructor() {
+    // Always use internal API routes - no external backend required
+    this.useInternal = true;
   }
 
   setAccessToken(token: string | null) {
-    this.accessToken = token;
+    // Token storage for future use when auth is implemented
+    if (typeof window !== 'undefined') {
+      if (token) {
+        localStorage.setItem('authToken', token);
+      } else {
+        localStorage.removeItem('authToken');
+      }
+    }
   }
 
-  private getHeaders(): HeadersInit {
+  private getInternalHeaders(): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
-    if (this.accessToken) {
-      headers['Authorization'] = `Bearer ${this.accessToken}`;
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
     }
     return headers;
   }
@@ -43,35 +55,39 @@ class ApiClient {
   }
 
   async get<T>(endpoint: string): Promise<ApiResponse<T>> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    // Use internal API routes - no external calls
+    const response = await fetch(`${endpoint}`, {
       method: 'GET',
-      headers: this.getHeaders(),
+      headers: this.getInternalHeaders(),
     });
     return this.handleResponse<T>(response);
   }
 
   async post<T>(endpoint: string, body?: object): Promise<ApiResponse<T>> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    // Use internal API routes
+    const response = await fetch(`${endpoint}`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      headers: this.getInternalHeaders(),
       body: body ? JSON.stringify(body) : undefined,
     });
     return this.handleResponse<T>(response);
   }
 
   async put<T>(endpoint: string, body: object): Promise<ApiResponse<T>> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    // Use internal API routes
+    const response = await fetch(`${endpoint}`, {
       method: 'PUT',
-      headers: this.getHeaders(),
+      headers: this.getInternalHeaders(),
       body: JSON.stringify(body),
     });
     return this.handleResponse<T>(response);
   }
 
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    // Use internal API routes
+    const response = await fetch(`${endpoint}`, {
       method: 'DELETE',
-      headers: this.getHeaders(),
+      headers: this.getInternalHeaders(),
     });
     return this.handleResponse<T>(response);
   }
@@ -83,11 +99,6 @@ class ApiClient {
   ): Promise<ApiResponse<T>> {
     const formData = new FormData();
     formData.append('file', file);
-
-    const headers: HeadersInit = {};
-    if (this.accessToken) {
-      headers['Authorization'] = `Bearer ${this.accessToken}`;
-    }
 
     return new Promise((resolve) => {
       const xhr = new XMLHttpRequest();
@@ -116,9 +127,12 @@ class ApiClient {
         resolve({ data: undefined, error: 'Network error', status: 0 });
       });
 
-      xhr.open('POST', `${this.baseUrl}${endpoint}`);
-      if (this.accessToken) {
-        xhr.setRequestHeader('Authorization', `Bearer ${this.accessToken}`);
+      xhr.open('POST', `${endpoint}`);
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
       }
       xhr.send(formData);
     });
@@ -128,16 +142,16 @@ class ApiClient {
 // Singleton instance
 export const apiClient = new ApiClient();
 
-// Helper functions for common requests
+// Helper functions for common requests - all use internal API routes
 export const api = {
   // Users
   users: {
-    getProfile: (username: string) => apiClient.get(`/users/${encodeURIComponent(username)}`),
-    updateProfile: (data: object) => apiClient.put('/users/profile', data),
-    getFollowers: (username: string) => apiClient.get(`/users/${encodeURIComponent(username)}/followers`),
-    getFollowing: (username: string) => apiClient.get(`/users/${encodeURIComponent(username)}/following`),
-    follow: (username: string) => apiClient.post(`/users/${encodeURIComponent(username)}/follow`),
-    unfollow: (username: string) => apiClient.delete(`/users/${encodeURIComponent(username)}/follow`),
+    getProfile: (username: string) => apiClient.get(`/api/users/${encodeURIComponent(username)}`),
+    updateProfile: (data: object) => apiClient.put('/api/users/profile', data),
+    getFollowers: (username: string) => apiClient.get(`/api/users/${encodeURIComponent(username)}/followers`),
+    getFollowing: (username: string) => apiClient.get(`/api/users/${encodeURIComponent(username)}/following`),
+    follow: (username: string) => apiClient.post(`/api/users/${encodeURIComponent(username)}/follow`),
+    unfollow: (username: string) => apiClient.delete(`/api/users/${encodeURIComponent(username)}/follow`),
   },
 
   // Feed
@@ -147,7 +161,7 @@ export const api = {
         limit: String(params.limit || 10),
         offset: String(params.offset || 0),
       })}` : '';
-      return apiClient.get(`/feed${query}`);
+      return apiClient.get(`/api/feed${query}`);
     },
     getTrending: (params?: { limit?: number; offset?: number; timeRange?: string }) => {
       const query = params ? `?${new URLSearchParams({
@@ -155,22 +169,22 @@ export const api = {
         offset: String(params.offset || 0),
         ...(params.timeRange && { timeRange: params.timeRange }),
       })}` : '';
-      return apiClient.get(`/feed/trending${query}`);
+      return apiClient.get(`/api/feed/trending${query}`);
     },
     getDiscover: (params?: { limit?: number; offset?: number; genre?: string }) => {
       const query = params ? `?${new URLSearchParams({
-        limit: String(params.limit || 10),
+        limit: String(params.limit || 20),
         offset: String(params.offset || 0),
         ...(params.genre && { genre: params.genre }),
       })}` : '';
-      return apiClient.get(`/feed/discover${query}`);
+      return apiClient.get(`/api/feed/discover${query}`);
     },
     getFollowing: (params?: { limit?: number; offset?: number }) => {
       const query = params ? `?${new URLSearchParams({
         limit: String(params.limit || 10),
         offset: String(params.offset || 0),
       })}` : '';
-      return apiClient.get(`/feed/following${query}`);
+      return apiClient.get(`/api/feed/following${query}`);
     },
   },
 
@@ -178,23 +192,23 @@ export const api = {
   tracks: {
     list: (params?: Record<string, string>) => {
       const query = params ? `?${new URLSearchParams(params)}` : '';
-      return apiClient.get(`/tracks${query}`);
+      return apiClient.get(`/api/tracks${query}`);
     },
-    get: (id: string) => apiClient.get(`/tracks/${id}`),
-    create: (data: object) => apiClient.post('/tracks', data),
-    delete: (id: string) => apiClient.delete(`/tracks/${id}`),
-    like: (id: string) => apiClient.post(`/tracks/${id}/like`),
-    unlike: (id: string) => apiClient.delete(`/tracks/${id}/like`),
-    remix: (id: string, data: object) => apiClient.post(`/tracks/${id}/remix`, data),
-    promote: (id: string, remixId: string) => apiClient.post(`/tracks/${id}/promote`, { remixId }),
+    get: (id: string) => apiClient.get(`/api/tracks/${id}`),
+    create: (data: object) => apiClient.post('/api/tracks', data),
+    delete: (id: string) => apiClient.delete(`/api/tracks/${id}`),
+    like: (id: string) => apiClient.post(`/api/tracks/${id}/like`),
+    unlike: (id: string) => apiClient.delete(`/api/tracks/${id}/like`),
+    remix: (id: string, data: object) => apiClient.post(`/api/tracks/${id}/remix`, data),
+    promote: (id: string, remixId: string) => apiClient.post(`/api/tracks/${id}/promote`, { remixId }),
   },
 
   // Auth
   auth: {
-    login: (credentials: object) => apiClient.post('/auth/login', credentials),
-    register: (data: object) => apiClient.post('/auth/register', data),
-    logout: () => apiClient.post('/auth/logout'),
-    refresh: () => apiClient.post('/auth/refresh'),
+    login: (credentials: object) => apiClient.post('/api/auth/login', credentials),
+    register: (data: object) => apiClient.post('/api/auth/register', data),
+    logout: () => apiClient.post('/api/auth/logout'),
+    refresh: () => apiClient.post('/api/auth/refresh'),
   },
 };
 

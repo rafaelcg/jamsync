@@ -159,6 +159,10 @@ export default function HomePage() {
     console.log("Uploading track:", trackData);
   };
 
+  const handleRemixSubmit = (trackData: Partial<Track>) => {
+    console.log("Creating remix:", trackData);
+  };
+
   const handleTabChange = (tab: TabItem) => {
     if (tab === "upload") {
       setShowUploadModal(true);

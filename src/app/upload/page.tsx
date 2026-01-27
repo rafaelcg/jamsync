@@ -115,13 +115,24 @@ export default function UploadPage() {
     setUploadProgress({ loaded: 0, total: 0, percentage: 0 });
 
     try {
-      // Simulate upload progress
+      // Smooth progress simulation: 2-3 seconds with staggered 100ms updates
+      const totalDuration = 2500; // 2.5 seconds
+      const updateInterval = 100; // Update every 100ms
+      const steps = totalDuration / updateInterval;
+      const progressPerStep = 100 / steps;
+
+      let currentProgress = 0;
       const progressInterval = setInterval(() => {
+        currentProgress += progressPerStep;
+        // Add slight randomness for realistic feel (0.5% to 1.5% variance)
+        const randomVariance = Math.random() * 1 + 0.5;
+        const nextProgress = Math.min(currentProgress + randomVariance, 95);
+        
         setUploadProgress(prev => ({
           ...prev,
-          percentage: Math.min(prev.percentage + 10, 90)
+          percentage: Math.round(nextProgress)
         }));
-      }, 200);
+      }, updateInterval);
 
       // In production, this would upload to S3/R2 and create track in database
       const response = await api.tracks.create({
@@ -133,8 +144,12 @@ export default function UploadPage() {
         durationSeconds: 180, // Would be extracted from file
       });
 
+      // Ensure progress reaches 100% before showing success
       clearInterval(progressInterval);
       setUploadProgress(prev => ({ ...prev, percentage: 100 }));
+
+      // Small delay to let the 100% show before success state
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       if (response.data && response.status === 200) {
         setStep('success');
@@ -411,11 +426,11 @@ export default function UploadPage() {
             <div className="w-full max-w-xs mx-auto">
               <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-primary-500 transition-all duration-300"
+                  className="h-full bg-primary-500 rounded-full transition-all duration-100 ease-out"
                   style={{ width: `${uploadProgress.percentage}%` }}
                 />
               </div>
-              <p className="text-sm text-neutral-400 mt-2">{uploadProgress.percentage}%</p>
+              <p className="text-sm text-neutral-400 mt-2 font-mono">{uploadProgress.percentage}%</p>
             </div>
           </div>
         )}

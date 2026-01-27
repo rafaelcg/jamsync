@@ -11,6 +11,7 @@ export interface User {
   followingCount: number;
   tracksCount: number;
   isFollowing?: boolean;
+  isVerified?: boolean;
   createdAt?: string;
 }
 

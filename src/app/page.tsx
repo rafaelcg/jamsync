@@ -74,7 +74,7 @@ const mockTracks: Track[] = [
     title: "Rainy Day",
     description: "Perfect for studying",
     audioUrl: "/demo.mp3",
-    videoUrl: "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4",
+    // No videoUrl - this will trigger the AudioPlayer
     durationSeconds: 180,
     likesCount: 456000,
     commentsCount: 2340,

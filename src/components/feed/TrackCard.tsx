@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatDuration, formatCount, formatRelativeTime } from '@/lib/utils';
 import type { Track } from '@/types';
+import { AudioPlayer } from '@/components/audio/AudioPlayer';
 
 interface TrackCardProps {
   track: Track;
@@ -342,13 +343,20 @@ function FeedTrackCard({
             muted
             loop
           />
+        ) : track.audioUrl ? (
+          <AudioPlayer
+            track={track}
+            onLike={onLike}
+            onRemix={onRemix}
+            onShare={onShare}
+          />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
             <div className="text-center text-white">
               <svg className="w-20 h-20 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
-              <p className="text-lg font-medium">Play Audio</p>
+              <p className="text-lg font-medium">No media available</p>
             </div>
           </div>
         )}

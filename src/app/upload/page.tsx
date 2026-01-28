@@ -3,8 +3,7 @@
 import React, { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/layout";
-import { api } from "@/lib/api";
-import type { UploadProgress, Track } from "@/types";
+import type { UploadProgress } from "@/types";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -85,7 +84,7 @@ export default function UploadPage() {
         setRecordingDuration(prev => prev + 1);
       }, 1000);
 
-    } catch (err) {
+    } catch {
       setError('Failed to access microphone/camera. Please check permissions.');
     }
   }, []);
@@ -104,7 +103,7 @@ export default function UploadPage() {
 
   const [selectedFileType, setSelectedFileType] = useState<'audio' | 'video'>('audio');
 
-  // Handle upload
+  // Handle upload with smooth progress animation
   const handleUpload = useCallback(async () => {
     if (!file || !title.trim()) {
       setError('Please provide a title');
@@ -114,57 +113,74 @@ export default function UploadPage() {
     setStep('processing');
     setUploadProgress({ loaded: 0, total: 0, percentage: 0 });
 
-    try {
-      // Smooth progress simulation: 2-3 seconds with staggered 100ms updates
-      const totalDuration = 2500; // 2.5 seconds
-      const updateInterval = 100; // Update every 100ms
-      const steps = totalDuration / updateInterval;
-      const progressPerStep = 100 / steps;
-
-      let currentProgress = 0;
+    // Simulate smooth progress animation over 2.5 seconds BEFORE actual upload
+    return new Promise<void>((resolve) => {
+      const startTime = Date.now();
+      const duration = 2500; // 2.5 seconds animation
+      
       const progressInterval = setInterval(() => {
-        currentProgress += progressPerStep;
-        // Add slight randomness for realistic feel (0.5% to 1.5% variance)
-        const randomVariance = Math.random() * 1 + 0.5;
-        const nextProgress = Math.min(currentProgress + randomVariance, 95);
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min((elapsed / duration) * 100, 95); // Cap at 95% until upload completes
+        
+        // Add slight randomness for realistic feel
+        const randomizedProgress = progress + (Math.random() * 3 - 1);
         
         setUploadProgress(prev => ({
           ...prev,
-          percentage: Math.round(nextProgress)
+          percentage: Math.max(0, Math.min(randomizedProgress, 95))
         }));
-      }, updateInterval);
+        
+        if (elapsed >= duration) {
+          clearInterval(progressInterval);
+          resolve();
+        }
+      }, 100); // Update every 100ms for smooth animation
+    }).then(async () => {
+      // Now do the actual upload
+      try {
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('title', title.trim());
+        formData.append('description', description.trim());
+        formData.append('tags', tags);
+        formData.append('createTrack', 'true');
 
-      // In production, this would upload to S3/R2 and create track in database
-      const response = await api.tracks.create({
-        title: title.trim(),
-        description: description.trim(),
-        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-        audioUrl: 'https://example.com/audio.mp3',
-        videoUrl: preview ? 'https://example.com/video.mp4' : undefined,
-        durationSeconds: 180, // Would be extracted from file
-      });
+        // Upload to R2 via our API
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
 
-      // Ensure progress reaches 100% before showing success
-      clearInterval(progressInterval);
-      setUploadProgress(prev => ({ ...prev, percentage: 100 }));
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Upload failed');
+        }
 
-      // Small delay to let the 100% show before success state
-      await new Promise(resolve => setTimeout(resolve, 300));
+        const uploadResult = await response.json();
 
-      if (response.data && response.status === 200) {
-        setStep('success');
-        setTimeout(() => {
-          router.push('/');
-        }, 2000);
-      } else {
-        setError(response.error || 'Upload failed');
+        // Complete progress to 100%
+        setUploadProgress(prev => ({ ...prev, percentage: 100 }));
+
+        // Small delay to let the 100% show before success state
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        if (uploadResult.url) {
+          setStep('success');
+          setTimeout(() => {
+            router.push('/');
+          }, 2000);
+        } else {
+          setError('Upload failed - no URL returned');
+          setStep('details');
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+        setError(errorMessage);
         setStep('details');
       }
-    } catch {
-      setError('An unexpected error occurred');
-      setStep('details');
-    }
-  }, [file, title, description, tags, preview, router]);
+    });
+  }, [file, title, description, tags, router]);
 
   // Reset and start over
   const handleReset = useCallback(() => {

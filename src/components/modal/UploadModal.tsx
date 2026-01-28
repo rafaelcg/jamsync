@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
-import { api } from '@/lib/api';
 import type { UploadModalProps, UploadProgress } from '@/types';
 
 export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
@@ -46,41 +45,6 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
     setStep('details');
   }, []);
 
-  // Handle upload
-  const handleUpload = useCallback(async () => {
-    if (!file || !title.trim()) {
-      setError('Please provide a title');
-      return;
-    }
-
-    setStep('processing');
-
-    try {
-      // For demo, we'll create a track with metadata
-      // In production, this would upload the file to S3
-      const response = await api.tracks.create({
-        title: title.trim(),
-        description: description.trim(),
-        // These would be the S3 URLs after upload
-        audioUrl: 'https://example.com/audio.mp3',
-        videoUrl: preview ? 'https://example.com/video.mp4' : undefined,
-        durationSeconds: 45, // Would be extracted from file
-      });
-
-      if (response.data && response.status === 200) {
-        const track = response.data as { id: string };
-        onUpload?.({ id: track.id });
-        handleClose();
-      } else {
-        setError(response.error || 'Upload failed');
-        setStep('details');
-      }
-    } catch {
-      setError('An unexpected error occurred');
-      setStep('details');
-    }
-  }, [file, title, description, preview, onUpload]);
-
   // Reset and close
   const handleClose = useCallback(() => {
     setStep('select');
@@ -92,6 +56,55 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
     setError(null);
     onClose();
   }, [onClose]);
+
+  // Handle upload
+  const handleUpload = useCallback(async () => {
+    if (!file || !title.trim()) {
+      setError('Please provide a title');
+      return;
+    }
+
+    setStep('processing');
+    setUploadProgress({ loaded: 0, total: 0, percentage: 0 });
+
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', title.trim());
+      formData.append('description', description.trim());
+      formData.append('createTrack', 'true');
+
+      // Upload to R2 via our API
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Upload failed');
+      }
+
+      const uploadResult = await response.json();
+
+      // Update progress to 100%
+      setUploadProgress(prev => ({ ...prev, percentage: 100 }));
+
+      if (uploadResult.url) {
+        const track = uploadResult.track || { id: `track-${Date.now()}` };
+        onUpload?.(track);
+        handleClose();
+      } else {
+        setError('Upload failed - no URL returned');
+        setStep('details');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      setStep('details');
+    }
+  }, [file, title, description, onUpload, handleClose]);
 
   if (!isOpen) return null;
 
